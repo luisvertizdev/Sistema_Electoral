@@ -1,98 +1,257 @@
 #include <iostream>
+#include <string>
 
 using namespace std;
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+const int MAX_CANDIDATOS = 3;
+const int MAX_BLOQUES = 20;
+const string HASH_GENESIS = "GENESIS";
+
+int contadorVotos[MAX_CANDIDATOS] = {0};
+string candidatos[MAX_CANDIDATOS] = {"Roberto Sanchez", "Keiko Fujimori", "Rafael Lopez Aliaga"};
+
+int indiceBloque[MAX_BLOQUES] = {0};
+string hashAnterior[MAX_BLOQUES] = {""};
+string hashActual[MAX_BLOQUES] = {""};
+string dniBloque[MAX_BLOQUES] = {""};
+int candidatoBloque[MAX_BLOQUES] = {0};
+
+int bloqueActual=0;
+int totalBloques=1;
+
+void inicializarBlockchain();
+void mostrarMenuPrincipal();
+void mostrarCandidatos();
+void registrarVoto();
+void mostrarMenuConteoVotos();
+void mostrarBlockchain();
+void verificarBlockchain();
+string generarHash(int indice, string hashAnterior, string dni, int candidato);
 
 int main() {
+    inicializarBlockchain();
 
-    int opcionMenuPrincipal = 0;
-    int opcionMenuSecundario = 0;
-    int opcionMenuConteos = 0;
-    string dni = "";
-    int opcionCandidato = 0;
-    string candidatos[3] = { "Roberto Sanchez", "Keiko Fujimori", "Rafael López Aliaga"};
-    int contadorVotosCandidato[3] = {0, 0, 0};
-
-    // MENU 1
+    int opcion;
 
     do {
-        cout << "***** MENU PRINCIPAL *****" << endl;
-        cout << "1. REGISTRO DE VOTO" << endl;
-        cout << "2. CONTEO DE VOTOS" << endl;
-        cout << "3. SALIR " << endl;
-        cout << "Ingresa la opción: ";
-        cin >> opcionMenuPrincipal;
+        mostrarMenuPrincipal();
+        cout << "Ingrese la opción: ";
+        cin >> opcion;
 
-        switch (opcionMenuPrincipal) {
+        switch (opcion) {
             case 1: {
-                do {
-                    cout << "***** MENU SECUNDARIO *****" << endl;
-                    cout << "1. IDENTIFICACIÓN" << endl;
-                    cout << "2. VOLVER" << endl;
-                    cout << "Ingrese una opción: ";
-                    cin >> opcionMenuSecundario;
+                registrarVoto();
+                break;
+            }
+            case 2: {
+                mostrarMenuConteoVotos();
+                break;
+            }
+            case 3: {
+                mostrarBlockchain();
+                break;
+            }
+            case 4: {
+                verificarBlockchain();
+                break;
+            }
+            case 5: {
+                cout << "\nGracias por utilizar el sistema.\n";
+                break;
+            }
+            default: {
+                cout << "\nOpción incorrecta, vuelva a intentar por favor.\n";
+            }
+        }
 
-                    switch (opcionMenuSecundario) {
-                        case 1: {
-                            do {
-                                cout << "***** DATOS PERSONALES *****" << endl;
-                                cout << "Ingresa tu DNI: ";
-                                cin >> dni;
-                            } while (dni.length() != 8);
+    } while (opcion != 5);
 
-                            do {
-                                cout << "***** LISTA DE CANDIDATOS *****" << endl;
+    return 0;
+}
 
-                                for (int i = 0; i < 3; i++) {
-                                    cout << i+1 << ". " << candidatos[i] << endl;
-                                }
-                                cout << "Elige la opción de tu candidato: ";
-                                cin >> opcionCandidato;
-                            } while (opcionCandidato < 1 || opcionCandidato > 3);
+void inicializarBlockchain() {
+    indiceBloque[0] = 0;
+    hashAnterior[0] = HASH_GENESIS;
+    hashActual[0] = generarHash(0,HASH_GENESIS,"",0);
+    bloqueActual = 0;
+    totalBloques = 1;
+}
 
-                            cout << "Has votado por " << candidatos[opcionCandidato - 1] << "." << endl;
-                            contadorVotosCandidato[opcionCandidato - 1] = contadorVotosCandidato[opcionCandidato - 1] + 1;
+void mostrarMenuPrincipal() {
+    cout<<" ********** SISTEMA DE VOTACIÓN ELECTRÓNICA **********\n\n";
+    cout << "----- MENÚ PRINCIPAL -----\n";
+    cout<<"1. Registrar voto\n";
+    cout<<"2. Conteo de votos\n";
+    cout<<"3. Mostrar blockchain\n";
+    cout<<"4. Verificar blockchain\n";
+    cout<<"5. Salir\n";
+}
 
+void registrarVoto() {
+    if (totalBloques >= MAX_BLOQUES) {
+        cout << "\nSe alcanzó el número máximo de bloques.\n";
+        return;
+    }
 
-                        }
-                        case 2: {
-                            cout << "El sistema ha finalizado" << endl;
-                            return 0;
-                        }
-                        default: {}
-                    }
-                } while (opcionMenuSecundario < 1 || opcionMenuSecundario > 2);
+    bloqueActual = totalBloques;
+    totalBloques++;
+
+    indiceBloque[bloqueActual] = bloqueActual;
+    hashAnterior[bloqueActual] = hashActual[bloqueActual - 1];
+
+    string dni;
+    int opcionCandidato;
+
+    do {
+        cout << "\nIngrese su DNI: ";
+        cin >> dni;
+
+        if (dni.length() != 8) {
+            cout << "\nDNI incorrecto, vuelva a intentar por favor.\n";
+        }
+    } while (dni.length() != 8);
+
+    mostrarCandidatos();
+
+    do {
+        cout << "\nIngrese la opción: ";
+        cin >> opcionCandidato;
+
+    } while (opcionCandidato < 1 || opcionCandidato > MAX_CANDIDATOS);
+
+    cout << "\nVoto registrado para " << candidatos[opcionCandidato - 1] << endl;
+
+    dniBloque[bloqueActual] = dni;
+    candidatoBloque[bloqueActual] = opcionCandidato;
+
+    contadorVotos[opcionCandidato - 1]++;
+
+    hashActual[bloqueActual] = generarHash(indiceBloque[bloqueActual], hashAnterior[bloqueActual], dni, opcionCandidato);
+
+    cout << "\n====================\n";
+    cout << "Bloque " << bloqueActual << " creado.\n";
+    cout << "Hash: " << hashActual[bloqueActual];
+    cout << "\n====================\n";
+}
+
+void mostrarMenuConteoVotos() {
+    int opcion;
+
+    do {
+        cout << "----- MENÚ CONTEO DE VOTOS -----\n";
+        cout << "1. Votos por candidato\n";
+        cout << "2. Total de votos emitidos\n";
+        cout << "3. Volver\n";
+        cout << "Ingrese la opción:: ";
+        cin >> opcion;
+
+        switch(opcion) {
+            case 1: {
+                cout << "\n----- VOTOS POR CANDIDATO -----\n";
+                for (int i = 0; i < MAX_CANDIDATOS; i++){
+                    cout << i + 1 << ". " << candidatos[i] << " : " << contadorVotos[i] << " votos\n";
+                }
+                break;
             }
 
             case 2: {
-                do {
-                    cout << "***** MENU SECUNDARIO *****" << endl;
-                    cout << "1. CANTIDAD DE VOTOS TOTALES" << endl;
-                    cout << "2. CANTIDAD DE VOTOS POR PROVINCIA" << endl;
-                    cout << "3. VOLVER " << endl;
-                    cout << "Ingresa la opción: ";
-                    cin >> opcionMenuConteos;
-                } while (opcionMenuConteos < 1 || opcionMenuConteos > 3);
-
-                switch (opcionMenuConteos) {
-                    case 1: {
-                        cout << "***** VOTOS TOTALES *****" << endl;
-                        for (int i = 0; i < 3; i++) {
-                            cout << i+1 << ". " << candidatos[i] << " " << contadorVotosCandidato[opcionCandidato - 1] << " votos" << endl;
-                        }
-                        break;
-                    }
-                    case 2: {
-                        cout << "***** VOTOS POR PROVINCIA *****" << endl;
-                    }
+                int total = 0;
+                for (int i = 0; i < MAX_CANDIDATOS; i++) {
+                    total += contadorVotos[i];
                 }
+                cout << "\nTotal de votos emitidos: " << total << endl;
+                break;
+            }
+
+            case 3: {
+                cout << "\nVolviendo al menú principal ...\n";
+                break;
+            }
+
+            default: {
+                cout << "\nOpción incorrecta, vuelva a intentar por favor.\n";
             }
         }
-    } while (opcionMenuPrincipal < 1 || opcionMenuPrincipal > 3);
 
+    } while (opcion != 3);
+}
 
+string generarHash(int indice, string hashAnterior, string dni, int candidato) {
+    int suma = indice;
 
-    return 0;
-    // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
+    for (char caracter : hashAnterior) {
+        suma += caracter;
+    }
+
+    if (dni != "") {
+        for (char caracter : dni) {
+            suma += caracter;
+        }
+    }
+    suma += candidato * 31;
+    return "HASH" + to_string(suma);
+}
+
+void mostrarCandidatos(){
+    cout << "\n----- LISTA DE CANDIDATOS -----\n";
+    for (int i = 0; i < MAX_CANDIDATOS; i++) {
+        cout << i + 1 <<". " << candidatos[i] << endl;
+    }
+}
+
+void mostrarBlockchain() {
+    cout << "\n----- BLOCKCHAIN DEL SISTEMA DE VOTACIÓN ELECTRÓNICA -----\n";
+
+    if (totalBloques == 1) {
+        cout << "\nSolo existe el bloque Génesis.\n";
+        return;
+    }
+
+    for (int i = 1; i < totalBloques; i++) {
+        cout << "\n====================\n";
+        cout << "Bloque #" << indiceBloque[i] << endl;
+        cout << "\n----- Hashes -----" << endl;
+        cout << "Hash anterior: " << hashAnterior[i] << endl;
+        cout << "Hash actual: " << hashActual[i] << endl;
+
+        cout << "\n----- Datos -----" << endl;
+        cout << "DNI: " << dniBloque[i] << endl;
+        cout << "Candidato: " << candidatos[candidatoBloque[i] - 1];
+        cout << "\n====================\n";
+    }
+}
+
+void verificarBlockchain() {
+    cout << "\n----- VERIFICACION BLOCKCHAIN -----\n";
+
+    bool cadenaValida = true;
+
+    if (hashAnterior[0] != HASH_GENESIS) {
+        cout << "Error en el bloque Génesis.\n" << endl;
+        cadenaValida = false;
+    }
+
+    for (int i = 1; i < totalBloques; i++) {
+        string hashCalculado = generarHash(indiceBloque[i],hashAnterior[i],dniBloque[i], candidatoBloque[i]);
+
+        if (hashCalculado != hashActual[i]) {
+            cout << "\nBloque #" << i << " ha sido alterado.\n";
+            cout << "Hash almacenado: " << hashActual[i] << endl;
+            cout << "Hash calculado: " << hashCalculado << endl;
+            cadenaValida = false;
+        }
+
+        if (hashAnterior[i] != hashActual[i - 1]) {
+            cout << "\nBloque #" << i << " con enlace incorrecto.\n";
+            cout << "Hash esperado: " << hashActual[i - 1] << endl;
+            cout << "Hash almacenado: " << hashAnterior[i] << endl;
+            cadenaValida = false;
+        }
+    }
+
+    if (cadenaValida) {
+        cout << "\nBlockchain correcta, no se detectaron alteraciones.\n";
+    } else {
+        cout << "\nBlockchain incorrecta, existe al menos un bloque modificado.\n";
+    }
 }
