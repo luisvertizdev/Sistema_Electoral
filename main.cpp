@@ -13,7 +13,6 @@ string candidatos[MAX_CANDIDATOS] = {"Roberto Sanchez", "Keiko Fujimori", "Rafae
 int indiceBloque[MAX_BLOQUES] = {0};
 string hashAnterior[MAX_BLOQUES] = {""};
 string hashActual[MAX_BLOQUES] = {""};
-string dniBloque[MAX_BLOQUES] = {""};
 int candidatoBloque[MAX_BLOQUES] = {0};
 
 int bloqueActual=0;
@@ -26,7 +25,7 @@ void registrarVoto();
 void mostrarMenuConteoVotos();
 void mostrarBlockchain();
 void verificarBlockchain();
-string generarHash(int indice, string hashAnterior, string dni, int candidato);
+string generarHash(int indice, string hashAnterior, int candidato);
 
 int main() {
     setlocale(LC_ALL, "");
@@ -75,7 +74,7 @@ int main() {
 void inicializarBlockchain() {
     indiceBloque[0] = 0;
     hashAnterior[0] = HASH_GENESIS;
-    hashActual[0] = generarHash(0,HASH_GENESIS,"",0);
+    hashActual[0] = generarHash(0, HASH_GENESIS, 0);
     bloqueActual = 0;
     totalBloques = 1;
 }
@@ -123,12 +122,11 @@ void registrarVoto() {
 
     cout << "\nVoto registrado para " << candidatos[opcionCandidato - 1] << endl;
 
-    dniBloque[bloqueActual] = dni;
     candidatoBloque[bloqueActual] = opcionCandidato;
 
     contadorVotos[opcionCandidato - 1]++;
 
-    hashActual[bloqueActual] = generarHash(indiceBloque[bloqueActual], hashAnterior[bloqueActual], dni, opcionCandidato);
+    hashActual[bloqueActual] = generarHash(indiceBloque[bloqueActual], hashAnterior[bloqueActual], opcionCandidato);
 
     cout << "\n====================\n";
     cout << "Bloque " << bloqueActual << " creado.\n";
@@ -178,19 +176,15 @@ void mostrarMenuConteoVotos() {
     } while (opcion != 3);
 }
 
-string generarHash(int indice, string hashAnterior, string dni, int candidato) {
+string generarHash(int indice, string hashAnterior, int candidato) {
     int suma = indice;
 
     for (char caracter : hashAnterior) {
         suma += caracter;
     }
 
-    if (dni != "") {
-        for (char caracter : dni) {
-            suma += caracter;
-        }
-    }
     suma += candidato * 31;
+
     return "HASH" + to_string(suma);
 }
 
@@ -211,13 +205,13 @@ void mostrarBlockchain() {
 
     for (int i = 1; i < totalBloques; i++) {
         cout << "\n====================\n";
-        cout << "Bloque #" << indiceBloque[i] << endl;
-        cout << "\n----- Hashes -----" << endl;
-        cout << "Hash anterior: " << hashAnterior[i] << endl;
-        cout << "Hash actual: " << hashActual[i] << endl;
+        cout << "Bloque #" << indiceBloque[i];
+        cout << "\n----- Hashes -----";
+        cout << "\nHash anterior: " << hashAnterior[i];
+        cout << "\nHash actual: " << hashActual[i];
 
-        cout << "\n----- Datos -----" << endl;
-        cout << "Candidato: " << candidatos[candidatoBloque[i] - 1];
+        cout << "\n----- Datos -----";
+        cout << "\nCandidato: " << candidatos[candidatoBloque[i] - 1];
         cout << "\n====================\n";
     }
 }
@@ -233,7 +227,7 @@ void verificarBlockchain() {
     }
 
     for (int i = 1; i < totalBloques; i++) {
-        string hashCalculado = generarHash(indiceBloque[i],hashAnterior[i],dniBloque[i], candidatoBloque[i]);
+        string hashCalculado = generarHash(indiceBloque[i],hashAnterior[i], candidatoBloque[i]);
 
         if (hashCalculado != hashActual[i]) {
             cout << "\nBloque #" << i << " ha sido alterado.\n";
