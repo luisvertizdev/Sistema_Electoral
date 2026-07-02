@@ -32,6 +32,8 @@ int main() {
     setlocale(LC_ALL, "");
     inicializarBlockchain();
 
+    cout << " ********** SISTEMA DE VOTACIÓN ELECTRÓNICA **********\n\n";
+
     int opcion;
 
     do {
@@ -79,7 +81,6 @@ void inicializarBlockchain() {
 }
 
 void mostrarMenuPrincipal() {
-    cout<<" ********** SISTEMA DE VOTACIÓN ELECTRÓNICA **********\n\n";
     cout << "----- MENÚ PRINCIPAL -----\n";
     cout<<"1. Registrar voto\n";
     cout<<"2. Conteo de votos\n";
@@ -216,7 +217,6 @@ void mostrarBlockchain() {
         cout << "Hash actual: " << hashActual[i] << endl;
 
         cout << "\n----- Datos -----" << endl;
-        cout << "DNI: " << dniBloque[i] << endl;
         cout << "Candidato: " << candidatos[candidatoBloque[i] - 1];
         cout << "\n====================\n";
     }
