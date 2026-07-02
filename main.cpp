@@ -29,6 +29,7 @@ void verificarBlockchain();
 string generarHash(int indice, string hashAnterior, string dni, int candidato);
 
 int main() {
+    setlocale(LC_ALL, "");
     inicializarBlockchain();
 
     int opcion;
