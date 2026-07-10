@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <functional>
 
 using namespace std;
 
@@ -160,13 +161,11 @@ void mostrarMenuConteoVotos() {
     } while (opcion != 3);
 }
 
-string generarHash(int indice, string hashAnterior, int candidato) {
-    int suma = indice;
-    for (char caracter : hashAnterior) {
-        suma = suma + caracter;
-    }
-    suma = suma + (candidato * 31);
-    return "HASH" + to_string(suma);
+string generarHash(int indice, string hashAnterior, int opcionCandidato) {
+    string datos = to_string(indice) + hashAnterior + to_string(opcionCandidato);
+    hash<string> hash;
+    size_t valorHash = hash(datos);
+    return to_string(valorHash);
 }
 
 void mostrarCandidatos() {
